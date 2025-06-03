@@ -72,15 +72,6 @@ xterm*|rxvt*)
     ;;
 esac
 
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# ~/.bash_aliases, instead of adding them here directly.
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
-
-if [ -f ~/.my_aliases.sh ]; then
-    # shellcheck source=/home/lolo/.my_aliases.sh
-    . ~/.my_aliases.sh
-fi
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
@@ -93,25 +84,21 @@ if ! shopt -oq posix; then
   fi
 fi
 
-export PATH="$HOME/.local/bin:$PATH"
-export GPG_TTY=$(tty)
+# ----------------------------- Source PERSONAL CUSTOMIZATION FILES
 
-## https://fx.wtf/install#autocomplete
-# checking that fx is installed
-if [ -z "$(command -v fx)" ]; then
-    echo "fx is not installed. Please install it first."
-    exit 1
-else
-    source <(fx --comp bash)
-    export FX_THEME="5"
-fi
+# definition that takes as input path to a file and sources it if present otherwise print error message
+source_if_exists() {
+    if [ -f "$1" ]; then
+        # shellcheck source=./$1
+        source "$1"
+    else
+        echo "File $1 not found."
+    fi
+}
 
-## UV
-# checking that uv is installed
-if [ -z "$(command -v uv)" ]; then
-    echo "uv is not installed. Please install it first."
-    exit 1
-else
-    eval "$(uv generate-shell-completion bash)"
-    eval "$(uvx --generate-shell-completion bash)"
-fi
+source_if_exists "$HOME/.my_aliases.sh"
+source_if_exists "$HOME/.my_shell_rc.sh"
+
+. "$HOME/.atuin/bin/env"
+
+eval "$(atuin init bash)"

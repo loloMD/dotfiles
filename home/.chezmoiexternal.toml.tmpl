@@ -1,0 +1,150 @@
+{{- if eq .osid "linux-ubuntu" }}
+
+#A simple, modern and secure encryption tool (and Go library) with small explicit keys, no config options, and UNIX-style composability.
+[".local/bin/age"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "FiloSottile/age" (printf "age-*-%s-%s.tar.gz" .chezmoi.os .chezmoi.arch) | quote }}
+    executable = true
+    path = "age/age"
+
+[".local/bin/age-keygen"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "FiloSottile/age" (printf "age-*-%s-%s.tar.gz" .chezmoi.os .chezmoi.arch) | quote }}
+    executable = true
+    path = "age/age-keygen"
+
+#  Easily and securely send things from one computer to another 🐊 📦 
+[".local/bin/croc"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "schollz/croc" "croc_v*_Linux-64bit.tar.gz" | quote }}
+    executable = true
+    path = "croc"
+
+# 'exa' A modern replacement for `ls`
+[".local/bin/exa"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "ogham/exa" "exa-linux-x86_64-v*" | quote }}
+    executable = true
+    stripComponents = 1
+    path = "exa"
+
+## ------------------------------------- Charmbracelet tools -------------------------------------
+# viz md files in your terminal
+[".local/bin/glow"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "charmbracelet/glow" "glow_*_Linux_x86_64.tar.gz" | quote }}
+    executable = true
+    stripComponents = 1
+    path = "glow"
+
+#  A tool for glamorous shell scripts 🎀 
+[".local/bin/gum"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "charmbracelet/gum" "gum_*_Linux_x86_64.tar.gz" | quote }}
+    executable = true
+    stripComponents = 1
+    path = "gum"
+
+#  The SSH directory ✨ 
+[".local/bin/wishlist"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "charmbracelet/wishlist" "wishlist_*_Linux_x86_64.tar.gz" | quote }}
+    executable = true
+    stripComponents = 1
+    path = "wishlist"
+
+#  A tool for glamorous shell scripts 🎀 
+[".local/bin/vhs"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "charmbracelet/vhs" "vhs_*_Linux_x86_64.tar.gz" | quote }}
+    executable = true
+    stripComponents = 1
+    path = "vhs"
+
+# -------------------------------------
+
+#  Terminal JSON viewer & processor
+[".local/bin/fx"]
+    type = "file"
+    url = {{ gitHubLatestReleaseAssetURL "antonmedv/fx" "fx_linux_amd64" | quote }}
+    executable = true
+    path = "fx"
+
+#  🌸 A command-line fuzzy finder 
+[".local/bin/fzf"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "junegunn/fzf" "fzf-*-linux_amd64.tar.gz" | quote }}
+    executable = true
+    path = "fzf"
+
+#  A command-line tool to interact with the Bitwarden password manager
+[".local/bin/bw"]
+    type = "archive-file"
+    url = "https://bitwarden.com/download/?app=cli&platform=linux"
+    executable = true
+    path = "bw"
+
+#  bat is a cat(1) clone with wings.
+[".local/bin/bat"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "sharkdp/bat" "bat-*-x86_64-unknown-linux-gnu.tar.gz" | quote }}
+    executable = true
+    stripComponents = 1
+    path = "bat"
+
+# numbat
+[".local/bin/numbat"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "sharkdp/numbat" "numbat-*-x86_64-unknown-linux-gnu.tar.gz" | quote }}
+    executable = true
+    stripComponents = 1
+    path = "numbat"
+
+# fd is a simple, fast and user-friendly alternative to 'find'
+[".local/bin/fdfind"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "sharkdp/fd" "fd-*-x86_64-unknown-linux-gnu.tar.gz" | quote }}
+    executable = true
+    stripComponents = 1
+    path = "fd"
+
+# gitkraken is a cross-platform Git client
+[".local/bin/gitkraken"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "gitkraken/gk-cli" "gk_*_linux_amd64.zip" | quote }}
+    executable = true
+    stripComponents = 1
+    path = "gk"
+
+# duf is a disk usage utility
+[".local/bin/duf"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "muesli/duf" "duf_*_linux_x86_64.tar.gz" | quote }}
+    executable = true
+    path = "duf"
+
+{{- end }}
+
+{{- if and (not .ephemeral) (not .headless) }}
+{{-   $fontDir := "" }}
+{{-   if eq .chezmoi.os "darwin" }}
+{{-     $fontDir = "Library/Fonts" }}
+{{-   else if eq .chezmoi.os "linux" }}
+{{-     $fontDir = ".local/share/fonts" }}
+{{-   end }}
+{{-   range (list
+        "FiraCodeNerdFont-Bold.ttf"
+        "FiraCodeNerdFont-Medium.ttf"
+        "FiraCodeNerdFont-Retina.ttf"
+        "FiraCodeNerdFont-Light.ttf"
+        "FiraCodeNerdFont-Regular.ttf"
+        "FiraCodeNerdFont-SemiBold.ttf") }}
+["{{ $fontDir }}/{{ . }}"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "ryanoasis/nerd-fonts" "FiraCode.zip" | quote }}
+    refreshPeriod = "168h"
+    path =  {{ . | quote}}
+{{-   end }}
+{{- end }}
+
+

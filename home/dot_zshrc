@@ -1,0 +1,94 @@
+# Lines configured by zsh-newuser-install
+HISTFILE=~/.zsh_historic
+HISTSIZE=10000
+setopt extendedglob notify
+bindkey -e
+# End of lines configured by zsh-newuser-install
+# The following lines were added by compinstall
+zstyle :compinstall filename '/home/lolo/.zshrc'
+
+autoload -Uz compinit
+compinit
+
+# Enhanced Zsh completion system
+
+# Make completion case-insensitive
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+
+# Use menu selection for completion
+zstyle ':completion:*' menu select
+
+# Group results by category
+zstyle ':completion:*' group-name ''
+
+# Colorize completion suggestions
+zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+
+# Show descriptions for options
+zstyle ':completion:*:descriptions' format '%F{green}-- %d --%f'
+
+# Show warnings for no matches
+zstyle ':completion:*:warnings' format '%F{red}No matches for: %d%f'
+
+# Show messages during completion
+zstyle ':completion:*:messages' format '%F{purple}%d%f'
+
+# Use cache for commands using cache
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/.zcompcache"
+
+# Complete process IDs with menu selection
+zstyle ':completion:*:*:kill:*' menu yes select
+zstyle ':completion:*:kill:*' force-list always
+
+# Fuzzy matching of completions
+zstyle ':completion:*' completer _complete _match _approximate
+zstyle ':completion:*:match:*' original only
+zstyle ':completion:*:approximate:*' max-errors 1 numeric
+# End of lines added by compinstall
+
+
+# Fix key bindings for terminal navigation
+bindkey "^[[1;5C" forward-word                 # Ctrl+right
+bindkey "^[[1;5D" backward-word                # Ctrl+left
+bindkey "^[[H" beginning-of-line               # Home
+bindkey "^[[F" end-of-line                     # End
+bindkey "^[[3~" delete-char                    # Delete
+bindkey "^H" backward-delete-char              # Backspace
+bindkey "^[[A" history-beginning-search-backward # Up arrow
+bindkey "^[[B" history-beginning-search-forward  # Down arrow
+
+# If using terminfo database (more portable)
+# For supported terminals, this may work better
+if [[ -n "$terminfo" ]]; then
+  # Only bind keys if the corresponding terminfo capability exists
+  [[ -n ${terminfo[kpp]} ]] && bindkey "${terminfo[kpp]}" up-line-or-history      # PageUp
+  [[ -n ${terminfo[knp]} ]] && bindkey "${terminfo[knp]}" down-line-or-history    # PageDown
+  [[ -n ${terminfo[khome]} ]] && bindkey "${terminfo[khome]}" beginning-of-line   # Home
+  [[ -n ${terminfo[kend]} ]] && bindkey "${terminfo[kend]}" end-of-line           # End
+  [[ -n ${terminfo[kdch1]} ]] && bindkey "${terminfo[kdch1]}" delete-char         # Delete
+  # Ctrl+Left/Right - these are often not in terminfo
+  [[ -n ${terminfo[kLFT5]} ]] && bindkey "${terminfo[kLFT5]}" backward-word
+  [[ -n ${terminfo[kRIT5]} ]] && bindkey "${terminfo[kRIT5]}" forward-word
+fi
+
+# Enable Zsh line editor's advanced features
+autoload -Uz up-line-or-beginning-search
+autoload -Uz down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+
+# ----------------------------- Source PERSONAL CUSTOMIZATION FILES
+
+# definition that takes as input path to a file and sources it if present otherwise print error message
+source_if_exists() {
+    if [ -f "$1" ]; then
+        # shellcheck source=./$1
+        source "$1"
+    else
+        echo "File $1 not found."
+    fi
+}
+
+source_if_exists "$HOME/.my_aliases.sh"
+source_if_exists "$HOME/.my_shell_rc.sh"

@@ -1,0 +1,18 @@
+{{ if and (eq .osid "linux-ubuntu") .personal -}}
+
+{{ $packages := list
+     "huggingface_hub[cli]"
+     "tldr"
+     "httpie" -}}
+
+#!/bin/bash
+
+set -eufo pipefail
+
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+{{ range $packages -}}
+uv tool install {{ . }}
+{{ end -}}
+
+{{ end -}}

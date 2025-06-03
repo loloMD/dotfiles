@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
@@ -18,8 +20,25 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 
+# -------------------------------- Verbose Aliases
+alias rm='rm --verbose'
+alias cp='cp --verbose'
+alias mv='mv --verbose'
+alias ln='ln --verbose'
+
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
 alias rclone='rclone --interactive --human-readable'
+
+# Copy to clipboard, use this alias with piped command `cat file.txt | c`
+alias c='xclip -selection clipboard'
+
+if [ "$(command -v exa)" ]; then
+    echo "command \"exa\" exists on system"
+    alias ll='exa --group-directories-first --classify --header --long --all --group --accessed --modified --created --inode --links --blocks --git --icons --extended'
+else
+    alias ll='ls -la --color=auto'
+fi
+

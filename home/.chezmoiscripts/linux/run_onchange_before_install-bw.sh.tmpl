@@ -1,0 +1,11 @@
+{{ if and (eq .osid "linux-ubuntu") .personal -}}
+#!/bin/sh
+
+wget 'https://bitwarden.com/download/?app=cli&platform=linux' -O ~/bitwarden-cli.zip
+
+mkdir -p ~/.local/bin/
+unzip -o ~/bitwarden-cli.zip -d ~/.local/bin/
+
+rm ~/bitwarden-cli.zip
+
+{{ end -}}

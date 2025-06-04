@@ -102,3 +102,5 @@ source_if_exists "$HOME/.my_shell_rc.sh"
 . "$HOME/.atuin/bin/env"
 
 eval "$(atuin init bash)"
+
+source /home/lolo/.config/broot/launcher/bash/br

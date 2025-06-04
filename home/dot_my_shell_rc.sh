@@ -145,6 +145,13 @@ else
     eval "$(rclone completion "${TYPE_OF_SHELL}" -)"
 fi
 
+## Taskfile
+if [ -z "$(command -v task)" ]; then
+    echo "Taskfile is not installed."
+else
+    eval "$(task --completion "${TYPE_OF_SHELL}")"
+fi
+
 # -----------------------------------------------------------------------------
 # Custom environment variables
 # -----------------------------------------------------------------------------

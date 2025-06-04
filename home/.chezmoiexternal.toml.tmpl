@@ -130,6 +130,13 @@
     executable = true
     path = "lazygit"
 
+# broot is a new way to see and navigate directory trees
+[".local/bin/broot"]
+    type = "file"
+    url = 'https://dystroy.org/broot/download/x86_64-linux/broot'
+    executable = true
+    path = "broot"
+
 {{- end }}
 
 {{- if and (not .ephemeral) (not .headless) }}

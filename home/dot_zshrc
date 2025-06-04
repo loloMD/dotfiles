@@ -94,3 +94,5 @@ source_if_exists "$HOME/.my_aliases.sh"
 source_if_exists "$HOME/.my_shell_rc.sh"
 
 eval "$(atuin init zsh)"
+
+source /home/lolo/.config/broot/launcher/bash/br

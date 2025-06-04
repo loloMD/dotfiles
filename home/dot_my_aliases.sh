@@ -36,9 +36,6 @@ alias rclone='rclone --interactive --human-readable'
 alias c='xclip -selection clipboard'
 
 if [ "$(command -v exa)" ]; then
-    echo "command \"exa\" exists on system"
     alias ll='exa --group-directories-first --classify --header --long --all --group --accessed --modified --created --inode --links --blocks --git --icons --extended'
-else
-    alias ll='ls -la --color=auto'
 fi
 

@@ -12,7 +12,6 @@ prepend_to_path() {
     dir="$1"
     case ":$PATH:" in
         *":$dir:"*) 
-            echo "Directory $dir is already in PATH."
             ;;
         *)
             echo "Prepending $dir to PATH."
@@ -75,6 +74,8 @@ if [ -z "$(command -v starship)" ]; then
     echo "starship is not installed."
 else
     eval "$(starship init "${TYPE_OF_SHELL}")"
+    # completions for starship
+    eval "$(starship completions "${TYPE_OF_SHELL}")"
 fi
 
 # Atuin - command history manager
@@ -87,10 +88,7 @@ else
     [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
     eval "$(atuin init "${TYPE_OF_SHELL}" --disable-up-arrow)"
     
-    # Generate and load completions for Atuin
-    if command -v atuin > /dev/null; then
-        eval "$(atuin gen-completions --shell "${TYPE_OF_SHELL}")"
-    fi
+    eval "$(atuin gen-completions --shell "${TYPE_OF_SHELL}")"
 fi
 
 # -----------------------------------------------------------------------------
@@ -139,6 +137,14 @@ else
     eval "$(gh completion -s "${TYPE_OF_SHELL}")"
 fi
 
+## rclone 
+# checking that rclone is installed
+if [ -z "$(command -v rclone)" ]; then
+    echo "rclone is not installed."
+else
+    eval "$(rclone completion "${TYPE_OF_SHELL}" -)"
+fi
+
 # -----------------------------------------------------------------------------
 # Custom environment variables
 # -----------------------------------------------------------------------------
@@ -164,3 +170,7 @@ export HF_HOME=~/App_cache/huggingface_home/
 export LC_ALL="en_US.utf8"
 
 export TERM=xterm-256color
+
+export MANPAGER="sh -c 'sed -u -e \"s/\\x1B\[[0-9;]*m//g; s/.\\x08//g\" | bat -p -lman'"
+
+# -----------------------------------------------------------------------------

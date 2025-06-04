@@ -123,6 +123,13 @@
     executable = true
     path = "duf"
 
+# lazygit is a simple terminal UI for git commands
+[".local/bin/lazygit"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "jesseduffield/lazygit" "lazygit_*_Linux_x86_64.tar.gz" | quote }}
+    executable = true
+    path = "lazygit"
+
 {{- end }}
 
 {{- if and (not .ephemeral) (not .headless) }}

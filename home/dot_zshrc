@@ -93,6 +93,14 @@ source_if_exists() {
 source_if_exists "$HOME/.my_aliases.sh"
 source_if_exists "$HOME/.my_shell_rc.sh"
 
-eval "$(atuin init zsh)"
 
-source /home/lolo/.config/broot/launcher/bash/br
+## Created by nwm
+export NVM_DIR="$HOME/.config/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+## To activate Ollama completion 
+# mkdir -p $HOME/.zsh_completions
+# wget -O $HOME/.zsh_completions/_ollama https://gist.githubusercontent.com/obeone/9313811fd61a7cbb843e0001a4434c58/raw/_ollama.zsh
+fpath=($HOME/.zsh_completions $fpath)
+

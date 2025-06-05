@@ -37,5 +37,6 @@ alias c='xclip -selection clipboard'
 
 if [ "$(command -v exa)" ]; then
     alias ll='exa --group-directories-first --classify --header --long --all --group --accessed --modified --created --inode --links --blocks --git --icons --extended'
+    alias lll='exa --group-directories-first --classify --header --long --all --group --accessed --modified --created --inode --links --blocks --git --icons --extended -s new'
 fi
 

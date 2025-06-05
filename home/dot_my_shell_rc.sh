@@ -85,10 +85,24 @@ if [ ! -d "$HOME/.atuin/bin/" ]; then
 else
     . "$HOME/.atuin/bin/env"
 
-    [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
-    eval "$(atuin init "${TYPE_OF_SHELL}" --disable-up-arrow)"
+    # if type_of_shell is bash, source the preexec script if it exists
+    if [ "$TYPE_OF_SHELL" = "bash" ]; then
+        if [ -f ~/.bash-preexec.sh ]; then
+            source ~/.bash-preexec.sh
+        fi
+    fi
+    eval "$(atuin init --disable-up-arrow "${TYPE_OF_SHELL}")"
     
     eval "$(atuin gen-completions --shell "${TYPE_OF_SHELL}")"
+fi
+
+## Broot
+# if `/home/lolo/.config/broot/launcher/bash/br` exists, source it
+if [ -f "$HOME/.config/broot/launcher/bash/br" ]; then
+    # shellcheck source=./.config/broot/launcher/bash/br
+    source "$HOME/.config/broot/launcher/bash/br"
+else
+    echo "Broot launcher script not found at $HOME/.config/broot/launcher/bash/br."
 fi
 
 # -----------------------------------------------------------------------------

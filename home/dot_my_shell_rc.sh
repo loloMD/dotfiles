@@ -166,6 +166,12 @@ else
     eval "$(task --completion "${TYPE_OF_SHELL}")"
 fi
 
+if gh help copilot &>/dev/null; then
+    eval "$(gh copilot alias -- "${TYPE_OF_SHELL}")"
+else
+    echo "The 'gh copilot' subcommand does not exist."
+fi
+
 # -----------------------------------------------------------------------------
 # Custom environment variables
 # -----------------------------------------------------------------------------

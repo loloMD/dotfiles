@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e # -e: exit on error
+set -eu pipefail # -e: exit on error
 
 if [ ! "$(command -v chezmoi)" ]; then
   bin_dir="$HOME/.local/bin"
@@ -19,5 +19,23 @@ fi
 
 # POSIX way to get script's dir: https://stackoverflow.com/a/29834779/12156188
 script_dir="$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P)"
+
+# Show resolved content of the file `.chezmoi.toml.tmpl` and prompt user to know if we can continue
+echo '\n -------------------------------------------------------------------- Validate the [data] section, its fields will impact the installation\n'
+cat "${script_dir}/home/.chezmoi.toml.tmpl" | chezmoi execute-template
+echo '\n -------------------------------------------------------------------- \n'
+
+read -p "Do you want to continue with the installation? (y/N): " answer
+case "$answer" in
+  [yY][eE][sS]|[yY])
+    echo "Continuing with installation..."
+    ;;
+  *)
+    echo "Installation aborted."
+    exit 0
+    ;;
+esac
+
+
 # exec: replace current process with chezmoi init
 exec "$chezmoi" init --apply "--source=$script_dir"

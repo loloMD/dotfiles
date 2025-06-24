@@ -1,4 +1,4 @@
-{{ if and (eq .osid "linux-ubuntu") .personal -}}
+{{ if eq .osid "linux-ubuntu" -}}
 
 {{ $packages := list
      "huggingface_hub[cli]"

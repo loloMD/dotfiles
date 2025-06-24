@@ -1,4 +1,4 @@
-{{ if and (eq .osid "linux-ubuntu") .personal -}}
+{{ if eq .osid "linux-ubuntu" -}}
 #!/bin/sh
 
 curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh

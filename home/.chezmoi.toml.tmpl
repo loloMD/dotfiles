@@ -28,9 +28,6 @@
 {{-   else if eq $hostname "ubuntu" -}}
 {{-     $headless = true -}}
 {{-     $personal = true -}}
-{{-   else if stdinIsATTY -}}
-{{-     $headless = promptBoolOnce . "headless" "Does this machine have a GUI?" -}}
-{{-     $ephemeral = promptBoolOnce . "ephemeral" "Is this machine ephemeral?" -}}
 {{-   else -}}
 {{-     $ephemeral = true -}}
 {{-     $headless = true -}}

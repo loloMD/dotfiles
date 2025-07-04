@@ -7,6 +7,13 @@ bindkey -e
 # The following lines were added by compinstall
 zstyle :compinstall filename '/home/lolo/.zshrc'
 
+# Create completions directory
+mkdir -p "$HOME/.zsh_completions"
+
+# Add completions directory to fpath BEFORE calling compinit
+fpath=("$HOME/.zsh_completions" "$HOME/.docker/completions" $fpath)
+
+
 autoload -Uz compinit
 compinit
 
@@ -93,16 +100,33 @@ source_if_exists() {
 source_if_exists "$HOME/.my_aliases.sh"
 source_if_exists "$HOME/.my_shell_rc.sh"
 
-
 ## Created by nwm
 export NVM_DIR="$HOME/.config/nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-## To activate Ollama completion 
-# mkdir -p $HOME/.zsh_completions
-# wget -O $HOME/.zsh_completions/_ollama https://gist.githubusercontent.com/obeone/9313811fd61a7cbb843e0001a4434c58/raw/_ollama.zsh
-fpath=($HOME/.zsh_completions $fpath)
+# Load completions after all setup is done
+if command -v ollama &>/dev/null; then
+    if [ ! -f "$HOME/.zsh_completions/_ollama" ]; then
+        echo "Downloading ollama completion..."
+        wget -O "$HOME/.zsh_completions/_ollama" https://gist.githubusercontent.com/obeone/9313811fd61a7cbb843e0001a4434c58/raw/_ollama.zsh
+        # Ensure proper permissions
+        chmod 644 "$HOME/.zsh_completions/_ollama"
+    fi
+fi
+
+if command -v bat &>/dev/null; then
+    if [ ! -f "$HOME/.zsh_completions/_bat" ] || [ "$(find "$HOME/.zsh_completions/_bat" -mtime +30 -print)" ]; then
+        echo "Updating bat completion..."
+        bat --completion zsh > "$HOME/.zsh_completions/_bat"
+        # Ensure proper permissions
+        chmod 644 "$HOME/.zsh_completions/_bat"
+    fi
+fi
+
+# Force reload completions for the new commands
+compdef _ollama ollama 2>/dev/null
+compdef _bat bat 2>/dev/null
 
 ## Bitwarden CLI has completion only for zsh shell
 # https://bitwarden.com/help/cli/#zsh-shell-completion

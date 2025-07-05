@@ -143,6 +143,13 @@
     executable = true
     path = "starship"
 
+# lazydocker 
+[".local/bin/lazydocker"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "jesseduffield/lazydocker" "lazydocker_*_Linux_x86_64.tar.gz" | quote }}
+    executable = true
+    path = "lazydocker"
+
 {{- end }}
 
 {{- if and (not .ephemeral) (not .headless) }}

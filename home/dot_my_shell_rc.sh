@@ -166,6 +166,7 @@ else
     eval "$(task --completion "${TYPE_OF_SHELL}")"
 fi
 
+## Github CLI Copilot
 if gh help copilot &>/dev/null; then
     eval "$(gh copilot alias -- "${TYPE_OF_SHELL}")"
 else
@@ -200,4 +201,30 @@ export TERM=xterm-256color
 
 export MANPAGER="sh -c 'sed -u -e \"s/\\x1B\[[0-9;]*m//g; s/.\\x08//g\" | bat -p -lman'"
 
+# CUDA environment variables
+# Ensure that the CUDA toolkit is installed and the paths are correct.
+# Adjust the paths below if your CUDA installation is in a different location.
+export CUDA_HOME=/usr/local/cuda
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+
+
 # -----------------------------------------------------------------------------
+
+
+# FIXME: /home/lolo/.local/share/oracle-cli/lib/python3.10/site-packages/oci_cli/bin/oci_autocomplete.sh:12: command not found: complete
+
+# Replace this single "oracle" line with proper OCI CLI setup
+# Setup OCI CLI autocomplete based on shell type
+# if [[ -e "/home/lolo/.local/share/oracle-cli/lib/python3.10/site-packages/oci_cli/bin/oci_autocomplete.sh" ]]; then
+    # if [ "$TYPE_OF_SHELL" = "bash" ]; then
+        # source "/home/lolo/.local/share/oracle-cli/lib/python3.10/site-packages/oci_cli/bin/oci_autocomplete.sh"
+    # elif [ "$TYPE_OF_SHELL" = "zsh" ]; then
+        # For Zsh, we need to ensure compinit is loaded first
+        # autoload -Uz compinit && compinit
+        # source "/home/lolo/.local/share/oracle-cli/lib/python3.10/site-packages/oci_cli/bin/oci_autocomplete.sh"
+    # else
+        # echo "Oracle CLI autocomplete not configured for $TYPE_OF_SHELL"
+    # fi
+# fi
+# 

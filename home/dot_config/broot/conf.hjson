@@ -70,12 +70,12 @@ show_selection_mark: true
 #
 cols_order: [
     mark
-    git
     size
     permission
     date
     count
     branch
+    git
     name
 ]
 

@@ -21,10 +21,14 @@ alias la='ls -A'
 alias l='ls -CF'
 
 # -------------------------------- Verbose Aliases
-alias rm='rm --verbose'
+alias rm='rm --verbose --preserve-root'
 alias cp='cp --verbose'
 alias mv='mv --verbose'
 alias ln='ln --verbose'
+
+alias chgrp='chgrp --preserve-root'
+alias chmod='chmod --preserve-root'
+alias chown='chown --preserve-root'
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
@@ -40,3 +44,6 @@ if [ "$(command -v exa)" ]; then
     alias lll='exa --group-directories-first --classify --header --long --all --group --accessed --modified --created --inode --links --blocks --git --icons --extended -s new'
 fi
 
+# -------------------------------- Hugging Face CLI Aliases
+alias hf='huggingface-cli'
+alias hfsc='huggingface-cli scan-cache'

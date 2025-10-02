@@ -132,3 +132,6 @@ compdef _bat bat 2>/dev/null
 # https://bitwarden.com/help/cli/#zsh-shell-completion
 eval "$(bw completion --shell zsh); compdef _bw bw;"
 
+if command -v sqlite-utils &>/dev/null; then
+    eval "$(_SQLITE_UTILS_COMPLETE=zsh_source sqlite-utils)"
+fi

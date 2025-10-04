@@ -273,7 +273,7 @@ preview_transformers: [
         input_extensions: [ "zip" ] 
         output_extension: txt
         mode: text
-        command: [ "unzip", "-l", "{input-path} " ]
+        command: [ "unzip", "-l", "{input-path}" ]
     }
 
     # use ffmpeg to get thumbnail from videos files
@@ -296,6 +296,18 @@ preview_transformers: [
             "-i", "{input-path}", 
             "-ss", "00:00:01.000", 
             "-vframes", "1", 
+            "-q:v", "2",
+            "{output-path}" ]
+    }
+
+    # use ffmpeg to get thumbnail from image files
+    {
+        input_extensions: [ "heic", "HEIC", "heif", "HEIF" ]
+        output_extension: jpg
+        mode: image
+        command: [ 
+            "ffmpeg", 
+            "-i", "{input-path}", 
             "-q:v", "2",
             "{output-path}" ]
     }

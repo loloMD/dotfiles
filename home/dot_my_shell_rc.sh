@@ -173,6 +173,13 @@ else
     echo "The 'gh copilot' subcommand does not exist."
 fi
 
+## doctl - DigitalOcean CLI
+if [ -z "$(command -v doctl)" ]; then
+    echo "doctl is not installed." 
+else
+    source <(doctl completion "${TYPE_OF_SHELL}")
+fi
+
 # -----------------------------------------------------------------------------
 # Custom environment variables
 # -----------------------------------------------------------------------------

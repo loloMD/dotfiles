@@ -156,6 +156,13 @@
     executable = true
     path = "pup"
 
+# doctl - The official command line interface for DigitalOcean
+[".local/bin/doctl"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "digitalocean/doctl" "doctl-*-linux-amd64.tar.gz" | quote }}
+    executable = true
+    path = "doctl"
+
 {{- end }}
 
 {{- if and (not .ephemeral) (not .headless) }}

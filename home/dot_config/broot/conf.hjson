@@ -208,6 +208,8 @@ content_search_max_file_size: 10MB
 #
 enable_kitty_keyboard: false
 
+kitty_graphics_transmission: temp_file
+
 ###############################################################
 # lines around matching line in filtered preview
 #
@@ -226,38 +228,97 @@ lines_after_match_in_preview: 1
 # Below are two examples that you may uncomment and adapt:
 #
 preview_transformers: [
-    // # Use mutool to render any PDF file as an image
-    // # In this example we use placeholders for the input and output files
-    // {
-    //     input_extensions: [ "pdf" ] // case doesn't matter
-    //     output_extension: png
-    //     mode: image
-    //     command: [ "mutool", "draw", "-w", "1000", "-o", "{output-path}", "{input-path}" ]
-    // }
+    # Use mutool to render any PDF file as an image
+    # In this example we use placeholders for the input and output files
+    {
+        input_extensions: [ "pdf" ] // case doesn't matter
+        output_extension: png
+        mode: image
+        command: [ "mutool", "draw", "-w", "1000", "-o", "{output-path}", "{input-path}" ]
+    }
 
-    // # Use LibreOffice to render Office files as images
-    // # In this example, {output-dir} is used to specify where LibreOffice must write the result
-    // {
-    //     input_extensions: [ "xls", "xlsx", "doc", "docx", "ppt", "pptx", "ods", "odt", "odp" ]
-    //     output_extension: png
-    //     mode: image
-    //     command: [
-    //         "libreoffice", "--headless",
-    //         "--convert-to", "png",
-    //         "--outdir", "{output-dir}",
-    //         "{input-path}"
-    //     ]
-    // }
+    # Use LibreOffice to render Office files as images
+    # In this example, {output-dir} is used to specify where LibreOffice must write the result
+    {
+        input_extensions: [ "xls", "xlsx", "doc", "docx", "ppt", "pptx", "ods", "odt", "odp" ]
+        output_extension: png
+        mode: image
+        command: [
+            "libreoffice", "--headless",
+            "--convert-to", "png",
+            "--outdir", "{output-dir}",
+            "{input-path}"
+        ]
+    }
 
-    // # Use jq to beautify JSON
-    // # In this example, the command refers to neither the input nor the output,
-    // # so broot pipes them to the stdin and stdout of the jq process
+    # Use jq to beautify JSON
+    # In this example, the command refers to neither the input nor the output,
+    # so broot pipes them to the stdin and stdout of the jq process
+    {
+        input_extensions: [ "json" ] 
+        output_extension: json
+        mode: text
+        command: [ "jq" ]
+    }
+
+    # Use SQLite Utils to provide completion
     // {
-    //     input_extensions: [ "json" ] 
-    //     output_extension: json
+    //     input_extensions: [ "sql" ]
+    //     output_extension: sql
     //     mode: text
-    //     command: [ "jq" ]
+    //     command: [ "sqlite-utils" ]
     // }
+
+    {
+        input_extensions: [ "zip" ] 
+        output_extension: txt
+        mode: text
+        command: [ "unzip", "-l", "{input-path}" ]
+    }
+
+    # use ffmpeg to get thumbnail from videos files
+    {
+        input_extensions: [
+            "mp4", "MP4", "m4v", "M4V", "mov", "MOV", "avi", "AVI",
+            "mkv", "MKV", "webm", "WEBM", "flv", "FLV", "f4v", "F4V",
+            "wmv", "WMV", "asf", "ASF", "3gp", "3GP", "3g2", "3G2",
+            "ts", "TS", "mts", "MTS", "m2ts", "M2TS", "vob", "VOB",
+            "ogv", "OGV", "rm", "RM", "rmvb", "RMVB", "mpg", "MPG",
+            "mpeg", "MPEG", "mpe", "MPE", "dat", "DAT", "divx", "DIVX",
+            "fmp4", "FMP4", "mod", "MOD", "tod", "TOD", "bik", "BIK",
+            "drc", "DRC", "ivf", "IVF", "yuv", "YUV", "264", "264",
+            "h264", "H264", "hevc", "HEVC", "265", "265"
+        ]
+        output_extension: jpg
+        mode: image
+        command: [ 
+            "ffmpeg", 
+            "-i", "{input-path}", 
+            "-ss", "00:00:01.000", 
+            "-vframes", "1", 
+            "-q:v", "2",
+            "{output-path}" ]
+    }
+
+    # use ffmpeg to get thumbnail from image files
+    {
+        input_extensions: [ "heic", "HEIC", "heif", "HEIF" ]
+        output_extension: jpg
+        mode: image
+        command: [ 
+            "ffmpeg", 
+            "-i", "{input-path}", 
+            "-q:v", "2",
+            "{output-path}" ]
+    }
+
+    # use `sqlite-utils` to preview .db files
+    {
+        input_extensions: [ "db", "sqlite", "sqlite3" ]
+        output_extension: txt
+        mode: text
+        command: [ "sqlite-utils", "schema", "{input-path}"]
+    }
 ]
 
 ###############################################################

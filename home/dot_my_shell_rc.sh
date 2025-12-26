@@ -4,9 +4,9 @@
 
 TYPE_OF_SHELL=$(basename "$SHELL")
 
-echo '===================================================================='
-printf "Initializing shell configuration for %s %s %s ...\n" "$TYPE_OF_SHELL" "$BASH_VERSION" "$ZSH_VERSION"
-echo '===================================================================='
+echo '==================================================================== 🌟'
+printf "🔧 Initializing shell configuration for %s %s %s ...\n" "$TYPE_OF_SHELL" "$BASH_VERSION" "$ZSH_VERSION"
+echo '==================================================================== 🌟'
 
 prepend_to_path() {
     dir="$1"
@@ -14,14 +14,14 @@ prepend_to_path() {
         *":$dir:"*) 
             ;;
         *)
-            echo "Prepending $dir to PATH."
+            echo "⬆️  Prepending $dir to PATH."
             export PATH="$dir:$PATH"
             ;;
     esac
 }
 
 pretty_path() {
-    echo "PATH directories:"
+    echo "📁 PATH directories:"
     echo "-----------------"
     
     # Split PATH by colon and process each directory - compatible with both Bash and Zsh
@@ -56,8 +56,6 @@ pretty_path() {
         
         count=$((count+1))
     done
-    
-    echo "-----------------"
 }
 
 for dir in "$HOME/.local/bin" "$HOME/.local/share/go/bin"; do
@@ -71,7 +69,7 @@ pretty_path
 # -----------------------------------------------------------------------------
 
 if [ -z "$(command -v starship)" ]; then
-    echo "starship is not installed."
+    echo "starship is not installed. ❌"
 else
     eval "$(starship init "${TYPE_OF_SHELL}")"
     # completions for starship
@@ -81,7 +79,7 @@ fi
 # Atuin - command history manager
 # checking that "$HOME/.atuin/bin/" directory exists
 if [ ! -d "$HOME/.atuin/bin/" ]; then
-    echo "Directory $HOME/.atuin/bin/ does not exist. Please install Atuin."
+    echo "Directory $HOME/.atuin/bin/ does not exist. Please install Atuin. ❌"
 else
     . "$HOME/.atuin/bin/env"
 
@@ -102,17 +100,16 @@ if [ -f "$HOME/.config/broot/launcher/bash/br" ]; then
     # shellcheck source=./.config/broot/launcher/bash/br
     source "$HOME/.config/broot/launcher/bash/br"
 else
-    echo "Broot launcher script not found at $HOME/.config/broot/launcher/bash/br."
+    echo "Broot launcher script not found at $HOME/.config/broot/launcher/bash/br. ⚠️"
 fi
 
 # -----------------------------------------------------------------------------
 # Custom shell completions
 # -----------------------------------------------------------------------------
 
-## https://fx.wtf/install#autocomplete
 # checking that fx is installed
 if [ -z "$(command -v fx)" ]; then
-    echo "fx is not installed."
+    echo "fx is not installed. ❌"
 else
     source <(fx --comp "${TYPE_OF_SHELL}")
     export FX_THEME="5"
@@ -121,7 +118,7 @@ fi
 ## UV
 # checking that uv is installed
 if [ -z "$(command -v uv)" ]; then
-    echo "uv is not installed."
+    echo "uv is not installed. ❌"
 else
     eval "$(uv generate-shell-completion "${TYPE_OF_SHELL}")"
     eval "$(uvx --generate-shell-completion "${TYPE_OF_SHELL}")"
@@ -130,7 +127,7 @@ fi
 ## zoxide 
 # checking that zoxide is installed
 if [ -z "$(command -v zoxide)" ]; then
-    echo "zoxide is not installed."
+    echo "zoxide is not installed. ❌"
 else
     eval "$(zoxide init "${TYPE_OF_SHELL}")"
 fi
@@ -138,7 +135,7 @@ fi
 ## chezmoi 
 # checking that chezmoi is installed
 if [ -z "$(command -v chezmoi)" ]; then
-    echo "chezmoi is not installed."
+    echo "chezmoi is not installed. ❌"
 else
     eval "$(chezmoi completion "${TYPE_OF_SHELL}")" 
 fi
@@ -146,36 +143,38 @@ fi
 ## gh
 # checking that gh is installed
 if [ -z "$(command -v gh)" ]; then
-    echo "gh is not installed."
+    echo "gh is not installed. ❌"
 else
     eval "$(gh completion -s "${TYPE_OF_SHELL}")"
+    
+    # gh copilot convenient aliases
+    # Use the subcommand's --help to detect presence; `gh help copilot` may return 0 even when the subcommand isn't available.
+    if gh copilot --help &>/dev/null; then
+        eval "$(gh copilot alias -- "${TYPE_OF_SHELL}")"
+    else
+        echo "The 'gh copilot' subcommand does not exist. ⚠️"
+    fi
+
 fi
 
 ## rclone 
 # checking that rclone is installed
 if [ -z "$(command -v rclone)" ]; then
-    echo "rclone is not installed."
+    echo "rclone is not installed. ❌"
 else
     eval "$(rclone completion "${TYPE_OF_SHELL}" -)"
 fi
 
 ## Taskfile
 if [ -z "$(command -v task)" ]; then
-    echo "Taskfile is not installed."
+    echo "Taskfile is not installed. ❌"
 else
     eval "$(task --completion "${TYPE_OF_SHELL}")"
 fi
 
-## Github CLI Copilot
-if gh help copilot &>/dev/null; then
-    eval "$(gh copilot alias -- "${TYPE_OF_SHELL}")"
-else
-    echo "The 'gh copilot' subcommand does not exist."
-fi
-
 ## doctl - DigitalOcean CLI
 if [ -z "$(command -v doctl)" ]; then
-    echo "doctl is not installed." 
+    echo "doctl is not installed. ❌" 
 else
     source <(doctl completion "${TYPE_OF_SHELL}")
 fi
@@ -215,6 +214,54 @@ export CUDA_HOME=/usr/local/cuda
 export PATH=$CUDA_HOME/bin:$PATH
 export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 
+
+
+# Function: pretty_env_vars
+# Prints a simple table of the custom environment variables set by this script
+pretty_env_vars() {
+    local -a vars
+    vars=(
+        "GPG_TTY|GPG TTY device used by GPG"
+        "GOPATH|Go workspace directory"
+        "XDG_DATA_HOME|XDG data home"
+        "XDG_CONFIG_HOME|XDG config home"
+        "XDG_STATE_HOME|XDG state home"
+        "XDG_CACHE_HOME|XDG cache home"
+        "EDITOR|Preferred editor command"
+        "TORCH_HOME|Torch cache / hub directory"
+        "HF_HOME|Hugging Face cache directory"
+        "LC_ALL|Locale setting"
+        "TERM|Terminal type"
+        "MANPAGER|Manpage pager command"
+        "CUDA_HOME|CUDA toolkit root"
+        "PATH|Current PATH"
+        "LD_LIBRARY_PATH|Dynamic linker library path"
+    )
+
+    printf "🔎 %-20s %-60s %s\n" "VARIABLE" "VALUE" "DESCRIPTION"
+    printf "🔎 %-20s %-60s %s\n" "--------" "-----" "-----------"
+
+    for entry in "${vars[@]}"; do
+        name="${entry%%|*}"
+        desc="${entry#*|}"
+        # Indirect expansion to get variable value
+        val="${!name}"
+        if [ -z "$val" ]; then
+            val="(not set)"
+        fi
+        # Shorten long values for readability
+        if [ ${#val} -gt 58 ]; then
+            display_val="${val:0:55}..."
+        else
+            display_val="$val"
+        fi
+        printf "   %-20s %-60s %s\n" "$name" "$display_val" "$desc"
+    done
+    echo "🔚 End of environment variables table"
+}
+
+# Show the custom env vars at shell init (can be commented out if too verbose)
+pretty_env_vars
 
 # -----------------------------------------------------------------------------
 

@@ -97,8 +97,8 @@ source_if_exists() {
     fi
 }
 
-source_if_exists "$HOME/.my_aliases.sh"
 source_if_exists "$HOME/.my_shell_rc.sh"
+source_if_exists "$HOME/.my_aliases.sh"
 
 ## Created by nwm
 export NVM_DIR="$HOME/.config/nvm"
@@ -128,9 +128,12 @@ fi
 compdef _ollama ollama 2>/dev/null
 compdef _bat bat 2>/dev/null
 
-## Bitwarden CLI has completion only for zsh shell
-# https://bitwarden.com/help/cli/#zsh-shell-completion
-eval "$(bw completion --shell zsh); compdef _bw bw;"
+if command -v bw &>/dev/null; then
+    ## Bitwarden CLI has completion only for zsh shell
+    # https://bitwarden.com/help/cli/#zsh-shell-completion
+    eval "$(bw completion --shell zsh); compdef _bw bw;"
+fi
+
 
 if command -v sqlite-utils &>/dev/null; then
     eval "$(_SQLITE_UTILS_COMPLETE=zsh_source sqlite-utils)"

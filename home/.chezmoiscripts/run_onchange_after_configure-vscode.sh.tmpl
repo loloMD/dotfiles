@@ -1,5 +1,34 @@
-{{ if and (eq .chezmoi.os "darwin" "linux") (not .headless) -}}
+{{ if and (eq .chezmoi.os "linux") (not .headless) -}}
+#!/bin/sh
+set -eu
+(set -o pipefail) 2>/dev/null && set -o pipefail
 
+# 📦 Install VS Code if missing
+if ! command -v code >/dev/null 2>&1; then
+    echo "⚠️  VS Code not found. Installing via apt..."
+
+    # Install dependencies
+    sudo apt-get update -y
+    sudo apt-get install -y wget gpg apt-transport-https software-properties-common
+
+    # Import Microsoft GPG key
+    wget -qO- https://packages.microsoft.com/keys/microsoft.asc \
+      | gpg --dearmor \
+      | sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg >/dev/null
+
+    # Add VS Code repository
+    echo "deb [arch=$(dpkg --print-architecture)] https://packages.microsoft.com/repos/code stable main" \
+      | sudo tee /etc/apt/sources.list.d/vscode.list
+
+    # Install VS Code
+    sudo apt-get update -y
+    sudo apt-get install -y code
+else
+    echo "✅ VS Code already installed."
+fi
+
+# 🔌 Install extensions
+echo "🔌 Installing VS Code extensions..."
 {{ $extensions := list
      "catppuccin.catppuccin-vsc"
      "eamodio.gitlens"
@@ -20,13 +49,9 @@
      "tamasfe.even-better-toml"
      "timonwong.shellcheck"
      "vscode-icons-team.vscode-icons" -}}
-
-#!/bin/bash
-
-set -eufo pipefail
-
 {{ range $extensions -}}
 code --force --install-extension {{ . }}
 {{ end -}}
 
+echo "🎉 VS Code setup complete!"
 {{ end -}}

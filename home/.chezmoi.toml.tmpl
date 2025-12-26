@@ -23,14 +23,11 @@
 {{- end -}}
 
 {{- if not $ephemeral -}}
-{{-   if eq $hostname "lolo" -}}
+{{-   if eq $hostname "lolo" "lolo-tower" -}}
 {{-     $personal = true -}}
 {{-   else if eq $hostname "ubuntu" -}}
 {{-     $headless = true -}}
 {{-     $personal = true -}}
-{{-   else -}}
-{{-     $ephemeral = true -}}
-{{-     $headless = true -}}
 {{-   end -}}
 {{- end -}}
 

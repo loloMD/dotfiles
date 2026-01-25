@@ -1,4 +1,22 @@
-{{- if eq .osid "linux-ubuntu" }}
+{{- if eq .chezmoi.os "linux" }}
+
+{{- $arch := .chezmoi.arch -}}
+{{- $isAmd64 := eq $arch "amd64" -}}
+{{- $isArm64 := eq $arch "arm64" -}}
+{{- $isArm := eq $arch "arm" -}}
+
+{{- /* Common arch naming conventions used by various release assets */ -}}
+{{- $x86_64OrArm64 := ternary "arm64" "x86_64" $isArm64 -}}
+{{- $x86_64OrArm64Upper := ternary "ARM64" "64bit" $isArm64 -}}
+{{- $rustArch := ternary "aarch64" "x86_64" $isArm64 -}}
+{{- $brootArchDir := ternary "aarch64-unknown-linux-gnu" "x86_64-linux" $isArm64 -}}
+{{- $starshipTarget := ternary "aarch64-unknown-linux-musl" "x86_64-unknown-linux-gnu" $isArm64 -}}
+{{- $ezaTarget := "x86_64-unknown-linux-gnu" -}}
+{{- if $isArm64 -}}
+{{-   $ezaTarget = "aarch64-unknown-linux-gnu" -}}
+{{- else if $isArm -}}
+{{-   $ezaTarget = "arm-unknown-linux-gnueabihf" -}}
+{{- end -}}
 
 #A simple, modern and secure encryption tool (and Go library) with small explicit keys, no config options, and UNIX-style composability.
 [".local/bin/age"]
@@ -16,23 +34,22 @@
 #  Easily and securely send things from one computer to another 🐊 📦 
 [".local/bin/croc"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "schollz/croc" "croc_v*_Linux-64bit.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "schollz/croc" (printf "croc_v*_Linux-%s.tar.gz" $x86_64OrArm64Upper) | quote }}
     executable = true
     path = "croc"
 
-# 'exa' A modern replacement for `ls`
-[".local/bin/exa"]
+# `eza`: modern replacement for `ls` (works on amd64/arm64 and more)
+[".local/bin/eza"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "ogham/exa" "exa-linux-x86_64-v*" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "eza-community/eza" (printf "eza_%s.tar.gz" $ezaTarget) | quote }}
     executable = true
-    stripComponents = 1
-    path = "exa"
+    path = "./eza"
 
 ## ------------------------------------- Charmbracelet tools -------------------------------------
 # viz md files in your terminal
 [".local/bin/glow"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "charmbracelet/glow" "glow_*_Linux_x86_64.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "charmbracelet/glow" (printf "glow_*_Linux_%s.tar.gz" $x86_64OrArm64) | quote }}
     executable = true
     stripComponents = 1
     path = "glow"
@@ -40,7 +57,7 @@
 #  A tool for glamorous shell scripts 🎀 
 [".local/bin/gum"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "charmbracelet/gum" "gum_*_Linux_x86_64.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "charmbracelet/gum" (printf "gum_*_Linux_%s.tar.gz" $x86_64OrArm64) | quote }}
     executable = true
     stripComponents = 1
     path = "gum"
@@ -48,7 +65,7 @@
 #  The SSH directory ✨ 
 [".local/bin/wishlist"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "charmbracelet/wishlist" "wishlist_*_Linux_x86_64.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "charmbracelet/wishlist" (printf "wishlist_*_Linux_%s.tar.gz" $x86_64OrArm64) | quote }}
     executable = true
     stripComponents = 1
     path = "wishlist"
@@ -56,7 +73,7 @@
 #  A tool for glamorous shell scripts 🎀 
 [".local/bin/vhs"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "charmbracelet/vhs" "vhs_*_Linux_x86_64.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "charmbracelet/vhs" (printf "vhs_*_Linux_%s.tar.gz" $x86_64OrArm64) | quote }}
     executable = true
     stripComponents = 1
     path = "vhs"
@@ -66,14 +83,14 @@
 #  Terminal JSON viewer & processor
 [".local/bin/fx"]
     type = "file"
-    url = {{ gitHubLatestReleaseAssetURL "antonmedv/fx" "fx_linux_amd64" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "antonmedv/fx" (printf "fx_linux_%s" .chezmoi.arch) | quote }}
     executable = true
     path = "fx"
 
 #  🌸 A command-line fuzzy finder 
 [".local/bin/fzf"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "junegunn/fzf" "fzf-*-linux_amd64.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "junegunn/fzf" (printf "fzf-*-linux_%s.tar.gz" .chezmoi.arch) | quote }}
     executable = true
     path = "fzf"
 
@@ -87,7 +104,7 @@
 #  bat is a cat(1) clone with wings.
 [".local/bin/bat"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "sharkdp/bat" "bat-*-x86_64-unknown-linux-gnu.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "sharkdp/bat" (printf "bat-*-%s-unknown-linux-gnu.tar.gz" $rustArch) | quote }}
     executable = true
     stripComponents = 1
     path = "bat"
@@ -95,7 +112,7 @@
 # numbat
 [".local/bin/numbat"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "sharkdp/numbat" "numbat-*-x86_64-unknown-linux-gnu.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "sharkdp/numbat" (printf "numbat-*-%s-unknown-linux-gnu.tar.gz" $rustArch) | quote }}
     executable = true
     stripComponents = 1
     path = "numbat"
@@ -103,63 +120,65 @@
 # fd is a simple, fast and user-friendly alternative to 'find'
 [".local/bin/fdfind"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "sharkdp/fd" "fd-*-x86_64-unknown-linux-gnu.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "sharkdp/fd" (printf "fd-*-%s-unknown-linux-gnu.tar.gz" $rustArch) | quote }}
     executable = true
     stripComponents = 1
     path = "fd"
 
 # gitkraken is a cross-platform Git client
+{{- if $isAmd64 }}
 [".local/bin/gitkraken"]
     type = "archive-file"
     url = {{ gitHubLatestReleaseAssetURL "gitkraken/gk-cli" "gk_*_linux_amd64.zip" | quote }}
     executable = true
     path = "gk"
+{{- end }}
 
 # duf is a disk usage utility
 [".local/bin/duf"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "muesli/duf" "duf_*_linux_x86_64.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "muesli/duf" (printf "duf_*_linux_%s.tar.gz" $x86_64OrArm64) | quote }}
     executable = true
     path = "duf"
 
 # lazygit is a simple terminal UI for git commands
 [".local/bin/lazygit"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "jesseduffield/lazygit" "lazygit_*_linux_x86_64.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "jesseduffield/lazygit" (printf "lazygit_*_linux_%s.tar.gz" $x86_64OrArm64) | quote }}
     executable = true
     path = "lazygit"
 
 # broot is a new way to see and navigate directory trees
 [".local/bin/broot"]
     type = "file"
-    url = 'https://dystroy.org/broot/download/x86_64-linux/broot'
+    url = {{ (printf "https://dystroy.org/broot/download/%s/broot" $brootArchDir) | quote }}
     executable = true
     path = "broot"
 
 [".local/bin/starship"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "starship/starship" "starship-x86_64-unknown-linux-gnu.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "starship/starship" (printf "starship-%s.tar.gz" $starshipTarget) | quote }}
     executable = true
     path = "starship"
 
 # lazydocker 
 [".local/bin/lazydocker"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "jesseduffield/lazydocker" "lazydocker_*_Linux_x86_64.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "jesseduffield/lazydocker" (printf "lazydocker_*_Linux_%s.tar.gz" $x86_64OrArm64) | quote }}
     executable = true
     path = "lazydocker"
 
 # pup -  Parsing HTML at the command line 
 [".local/bin/pup"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "ericchiang/pup" "pup_*_linux_amd64.zip" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "ericchiang/pup" (printf "pup_*_linux_%s.zip" .chezmoi.arch) | quote }}
     executable = true
     path = "pup"
 
 # doctl - The official command line interface for DigitalOcean
 [".local/bin/doctl"]
     type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "digitalocean/doctl" "doctl-*-linux-amd64.tar.gz" | quote }}
+    url = {{ gitHubLatestReleaseAssetURL "digitalocean/doctl" (printf "doctl-*-linux-%s.tar.gz" .chezmoi.arch) | quote }}
     executable = true
     path = "doctl"
 

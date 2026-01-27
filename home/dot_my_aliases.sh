@@ -47,10 +47,12 @@ if [ "$(command -v exa)" ]; then
 fi
 
 # if the `act` extension of the `gh` CLI is installed, enable the `act` alias
-if [ "$(command -v gh)" ] && gh extension list | grep -q 'gh act'; then
-    alias act='gh act'
-fi
+if [ "$(command -v gh)" ]; then 
 
-# -------------------------------- Hugging Face CLI Aliases
-alias hf='huggingface-cli'
-alias hfsc='huggingface-cli scan-cache'
+    # TODO
+    # gh alias set push-list 'api user/repos --paginate -f affiliation=collaborator,organization_member --jq ".[] | select(.permissions.push == true and (.owner.login == \"$1\" or \"$1\" == \"\")) | .full_name"'
+
+    if gh extension list | grep -q 'gh act'; then
+        alias act='gh act'
+    fi
+fi

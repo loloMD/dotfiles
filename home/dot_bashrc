@@ -100,3 +100,7 @@ source_if_exists "$HOME/.my_aliases.sh"
 source_if_exists "$HOME/.my_shell_rc.sh"
 
 
+. "$HOME/.cargo/env"
+. "/home/lolo/.deno/env"
+
+[[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path bash)"

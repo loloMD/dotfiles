@@ -163,6 +163,30 @@
     executable = true
     path = "doctl"
 
+# yq - A lightweight and portable command-line YAML processor
+[".local/bin/yq"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "mikefarah/yq" "yq_linux_amd64.tar.gz" | quote }}
+    executable = true
+    stripComponents = 1
+    path = "yq_linux_amd64"
+
+# crush - https://github.com/charmbracelet/crush
+[".local/bin/crush"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "charmbracelet/crush" "crush_*_Linux_x86_64.tar.gz" | quote }}
+    executable = true
+    stripComponents = 1
+    path = "crush"
+
+# delta - A syntax-highlighting pager for git and diff output
+[".local/bin/delta"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "dandavison/delta" "delta-*-x86_64-unknown-linux-gnu.tar.gz" | quote }}
+    executable = true
+    stripComponents = 1
+    path = "delta"
+
 {{- end }}
 
 {{- if and (not .ephemeral) (not .headless) }}

@@ -12,7 +12,11 @@ mkdir -p "$HOME/.zsh_completions"
 
 # Add completions directory to fpath BEFORE calling compinit
 fpath=("$HOME/.zsh_completions" "$HOME/.docker/completions" $fpath)
+# Add deno completions to search path
+if [[ ":$FPATH:" != *":/home/lolo/.zsh/completions:"* ]]; then export FPATH="/home/lolo/.zsh/completions:$FPATH"; fi
 
+. "/home/lolo/.deno/env"
+fpath+=~/.zfunc; autoload -Uz compinit; compinit
 
 autoload -Uz compinit
 compinit
@@ -135,3 +139,14 @@ eval "$(bw completion --shell zsh); compdef _bw bw;"
 if command -v sqlite-utils &>/dev/null; then
     eval "$(_SQLITE_UTILS_COMPLETE=zsh_source sqlite-utils)"
 fi
+# heroku autocomplete setup
+HEROKU_AC_ZSH_SETUP_PATH=/home/lolo/.cache/heroku/autocomplete/zsh_setup && test -f $HEROKU_AC_ZSH_SETUP_PATH && source $HEROKU_AC_ZSH_SETUP_PATH;
+
+[[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
+
+# bun completions
+[ -s "/home/lolo/.bun/_bun" ] && source "/home/lolo/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"

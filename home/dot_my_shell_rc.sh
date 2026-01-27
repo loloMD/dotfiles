@@ -180,6 +180,18 @@ else
     source <(doctl completion "${TYPE_OF_SHELL}")
 fi
 
+## awscli
+if [ -z "$(command -v aws)" ]; then
+    echo "awscli is not installed."
+else
+    if [ "$TYPE_OF_SHELL" = "bash" ]; then
+        complete -C '/usr/local/bin/aws_completer' aws
+    elif [ "$TYPE_OF_SHELL" = "zsh" ]; then
+        autoload -Uz +X bashcompinit && bashcompinit
+        complete -C '/usr/local/bin/aws_completer' aws
+    fi
+fi
+
 # -----------------------------------------------------------------------------
 # Custom environment variables
 # -----------------------------------------------------------------------------

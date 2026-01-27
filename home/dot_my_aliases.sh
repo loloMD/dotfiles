@@ -41,9 +41,9 @@ alias rclone='rclone --interactive --human-readable'
 # Copy to clipboard, use this alias with piped command `cat file.txt | c`
 alias c='xclip -selection clipboard'
 
-if [ "$(command -v exa)" ]; then
-    alias ll='exa --group-directories-first --classify --header --long --all --group --accessed --modified --created --inode --links --blocks --git --icons --extended'
-    alias lll='exa --group-directories-first --classify --header --long --all --group --accessed --modified --created --inode --links --blocks --git --icons --extended -s new'
+if [ "$(command -v eza)" ]; then
+    alias ll='eza --group-directories-first --classify --header --long --all --group --accessed --modified --created --inode --links --blocksize --git --icons --extended'
+    alias lll='eza --group-directories-first --classify --header --long --all --group --accessed --modified --created --inode --links --blocksize --git --icons --extended -s newest'
 fi
 
 # if the `act` extension of the `gh` CLI is installed, enable the `act` alias

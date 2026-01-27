@@ -14,7 +14,7 @@ set -eufo pipefail
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 {{ range $packages -}}
-uv tool install {{ . }}
+"$HOME"/.local/bin/uv tool install {{ . }}
 {{ end -}}
 
 {{ end -}}

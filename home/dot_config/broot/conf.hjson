@@ -234,13 +234,13 @@ preview_transformers: [
         input_extensions: [ "pdf" ] // case doesn't matter
         output_extension: png
         mode: image
-        command: [ "mutool", "draw", "-w", "1000", "-o", "{output-path}", "{input-path}" ]
+        command: [ "mutool", "draw", "-F", "png", "-w", "1000", "-o", "{output-path}", "{input-path}", "1" ]
     }
 
     # Use LibreOffice to render Office files as images
     # In this example, {output-dir} is used to specify where LibreOffice must write the result
     {
-        input_extensions: [ "xls", "xlsx", "doc", "docx", "ppt", "pptx", "ods", "odt", "odp" ]
+        input_extensions: [ "xls", "xlsx", "doc", "ppt", "pptx", "ods", "odt", "odp" ]
         output_extension: png
         mode: image
         command: [
@@ -249,6 +249,14 @@ preview_transformers: [
             "--outdir", "{output-dir}",
             "{input-path}"
         ]
+    }
+
+    # use `nbpreview --line-numbers --code-wrap` to preview .ipynb files
+    {
+        input_extensions: [ "ipynb" ]
+        output_extension: txt
+        mode: text
+        command: [ "nbpreview", "--line-numbers", "--code-wrap", "{input-path}" ]
     }
 
     # Use jq to beautify JSON
@@ -318,6 +326,14 @@ preview_transformers: [
         output_extension: txt
         mode: text
         command: [ "sqlite-utils", "schema", "{input-path}"]
+    }
+
+    # use `doxx` to preview .docx files
+    {
+        input_extensions: [ "docx" ]
+        output_extension: txt
+        mode: text
+        command: [ "doxx", "{input-path}" ]
     }
 ]
 

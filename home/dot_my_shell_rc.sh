@@ -1,236 +1,110 @@
 #!/usr/bin/env bash
-# This file is used to store commands to run at creation of login shells 
-# agnosticly of which type of shell is being used.
+# This file is sourced by interactive shells (bash or zsh).
 
-TYPE_OF_SHELL=$(basename "$SHELL")
+# Prevent double-sourcing
+if [ -n "${__MY_SHELL_RC_LOADED-}" ]; then
+    return 0 2>/dev/null || exit 0
+fi
+__MY_SHELL_RC_LOADED=1
 
-echo '==================================================================== 🌟'
-printf "🔧 Initializing shell configuration for %s %s %s ...\n" "$TYPE_OF_SHELL" "$BASH_VERSION" "$ZSH_VERSION"
-echo '==================================================================== 🌟'
+my_shell_rc_running_shell() {
+    if [ -n "${BASH_VERSION-}" ]; then
+        echo "bash"
+        return 0
+    fi
+    if [ -n "${ZSH_VERSION-}" ]; then
+        echo "zsh"
+        return 0
+    fi
+    basename "${SHELL:-sh}"
+}
+
+TYPE_OF_SHELL="$(my_shell_rc_running_shell)"
+
+my_shell_rc_is_interactive() {
+    case $- in
+        *i*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+: "${MY_SHELL_RC_VERBOSE:=1}"
+
+my_shell_rc_log() {
+    if [ "${MY_SHELL_RC_VERBOSE}" = "1" ]; then
+        printf "%s\n" "$*"
+    fi
+}
+
+if my_shell_rc_is_interactive && [ "${MY_SHELL_RC_VERBOSE}" = "1" ]; then
+    shell_version=""
+    if [ "$TYPE_OF_SHELL" = "bash" ]; then
+        shell_version="${BASH_VERSION-}"
+    elif [ "$TYPE_OF_SHELL" = "zsh" ]; then
+        shell_version="${ZSH_VERSION-}"
+    fi
+
+    echo '==================================================================== 🌟'
+    if [ -n "${shell_version}" ]; then
+        printf "🔧 Initializing shell configuration for %s %s ...\n" "$TYPE_OF_SHELL" "$shell_version"
+    else
+        printf "🔧 Initializing shell configuration for %s ...\n" "$TYPE_OF_SHELL"
+    fi
+    echo '==================================================================== 🌟'
+fi
 
 prepend_to_path() {
+    local dir
     dir="$1"
+    [ -n "$dir" ] || return 0
     case ":$PATH:" in
         *":$dir:"*) 
             ;;
         *)
-            echo "⬆️  Prepending $dir to PATH."
-            export PATH="$dir:$PATH"
+            my_shell_rc_log "⬆️  Prepending $dir to PATH."
+            PATH="$dir:$PATH"
+            export PATH
             ;;
     esac
 }
 
 pretty_path() {
+    my_shell_rc_is_interactive || return 0
+    [ "${MY_SHELL_RC_VERBOSE}" = "1" ] || return 0
+
     echo "📁 PATH directories:"
-    echo "-----------------"
-    
-    # Split PATH by colon and process each directory - compatible with both Bash and Zsh
-    if [ "$TYPE_OF_SHELL" = "bash" ]; then
-        IFS=':' read -ra PATHS <<< "$PATH"
+    printf "%-2s %-70s %12s\n" "" "PATH" "EXECUTABLES"
+    printf "%-2s %-70s %12s\n" "" "----" "-----------"
+
+    local -a dirs
+    if [ "$TYPE_OF_SHELL" = "zsh" ]; then
+        # In zsh, word-splitting on IFS doesn't happen by default; use the `path` array.
+        # shellcheck disable=SC2154
+        dirs=("${path[@]}")
     else
-        # Zsh compatible way to split the PATH
-        PATHS=(${(s/:/)PATH})
+        IFS=':' read -r -a dirs <<< "${PATH-}"
     fi
-    
-    # Count for numbering
-    count=1
-    
-    for dir in "${PATHS[@]}"; do
-        # Check if directory exists
+
+    local dir dir_status file_count
+    for dir in "${dirs[@]}"; do
+        [ -n "$dir" ] || dir='.'
+
         if [ -d "$dir" ]; then
             dir_status="✅"
+            file_count=$(find "$dir" -maxdepth 1 -type f -perm -111 2>/dev/null | wc -l | tr -d ' ')
         else
             dir_status="❌"
+            file_count="-"
         fi
-        
-        # Count executable files in the directory if it exists
-        if [ -d "$dir" ]; then
-            file_count=$(find "$dir" -maxdepth 1 -type f -executable 2>/dev/null | wc -l)
-            files_info="($file_count executables)"
-        else
-            files_info="(directory doesn't exist)"
-        fi
-        
-        # Print with formatting
-        printf "%3d. %s %s %s\n" "$count" "$dir_status" "$dir" "$files_info"
-        
-        count=$((count+1))
+
+        printf "%-2s %-70s %12s\n" "$dir_status" "$dir" "$file_count"
     done
 }
 
-for dir in "$HOME/.local/bin" "$HOME/.local/share/go/bin"; do
-    prepend_to_path "$dir"
-done
-
-pretty_path
-
-# -----------------------------------------------------------------------------
-# Custom command activations
-# -----------------------------------------------------------------------------
-
-if [ -z "$(command -v starship)" ]; then
-    echo "starship is not installed. ❌"
-else
-    eval "$(starship init "${TYPE_OF_SHELL}")"
-    # completions for starship
-    eval "$(starship completions "${TYPE_OF_SHELL}")"
-fi
-
-# Atuin - command history manager
-# checking that "$HOME/.atuin/bin/" directory exists
-if [ ! -d "$HOME/.atuin/bin/" ]; then
-    echo "Directory $HOME/.atuin/bin/ does not exist. Please install Atuin. ❌"
-else
-    . "$HOME/.atuin/bin/env"
-
-    # if type_of_shell is bash, source the preexec script if it exists
-    if [ "$TYPE_OF_SHELL" = "bash" ]; then
-        if [ -f ~/.bash-preexec.sh ]; then
-            source ~/.bash-preexec.sh
-        fi
-    fi
-    eval "$(atuin init --disable-up-arrow "${TYPE_OF_SHELL}")"
-    
-    eval "$(atuin gen-completions --shell "${TYPE_OF_SHELL}")"
-fi
-
-## Broot
-# if `/home/lolo/.config/broot/launcher/bash/br` exists, source it
-if [ -f "$HOME/.config/broot/launcher/bash/br" ]; then
-    # shellcheck source=./.config/broot/launcher/bash/br
-    source "$HOME/.config/broot/launcher/bash/br"
-else
-    echo "Broot launcher script not found at $HOME/.config/broot/launcher/bash/br. ⚠️"
-fi
-
-# -----------------------------------------------------------------------------
-# Custom shell completions
-# -----------------------------------------------------------------------------
-
-# checking that fx is installed
-if [ -z "$(command -v fx)" ]; then
-    echo "fx is not installed. ❌"
-else
-    source <(fx --comp "${TYPE_OF_SHELL}")
-    export FX_THEME="5"
-fi
-
-## UV
-# checking that uv is installed
-if [ -z "$(command -v uv)" ]; then
-    echo "uv is not installed. ❌"
-else
-    eval "$(uv generate-shell-completion "${TYPE_OF_SHELL}")"
-    eval "$(uvx --generate-shell-completion "${TYPE_OF_SHELL}")"
-fi
-
-## zoxide 
-# checking that zoxide is installed
-if [ -z "$(command -v zoxide)" ]; then
-    echo "zoxide is not installed. ❌"
-else
-    eval "$(zoxide init "${TYPE_OF_SHELL}")"
-fi
-
-## chezmoi 
-# checking that chezmoi is installed
-if [ -z "$(command -v chezmoi)" ]; then
-    echo "chezmoi is not installed. ❌"
-else
-    eval "$(chezmoi completion "${TYPE_OF_SHELL}")" 
-fi
-
-## gh
-# checking that gh is installed
-if [ -z "$(command -v gh)" ]; then
-    echo "gh is not installed. ❌"
-else
-    eval "$(gh completion -s "${TYPE_OF_SHELL}")"
-    
-    # gh copilot convenient aliases
-    # Use the subcommand's --help to detect presence; `gh help copilot` may return 0 even when the subcommand isn't available.
-    if gh copilot --help &>/dev/null; then
-        eval "$(gh copilot alias -- "${TYPE_OF_SHELL}")"
-    else
-        echo "The 'gh copilot' subcommand does not exist. ⚠️"
-    fi
-
-fi
-
-## rclone 
-# checking that rclone is installed
-if [ -z "$(command -v rclone)" ]; then
-    echo "rclone is not installed. ❌"
-else
-    eval "$(rclone completion "${TYPE_OF_SHELL}" -)"
-fi
-
-## Taskfile
-if [ -z "$(command -v task)" ]; then
-    echo "Taskfile is not installed. ❌"
-else
-    eval "$(task --completion "${TYPE_OF_SHELL}")"
-fi
-
-## doctl - DigitalOcean CLI
-if [ -z "$(command -v doctl)" ]; then
-    echo "doctl is not installed. ❌" 
-else
-    source <(doctl completion "${TYPE_OF_SHELL}")
-fi
-
-## awscli
-if [ -z "$(command -v aws)" ]; then
-    echo "awscli is not installed."
-else
-    if [ "$TYPE_OF_SHELL" = "bash" ]; then
-        complete -C '/usr/local/bin/aws_completer' aws
-    elif [ "$TYPE_OF_SHELL" = "zsh" ]; then
-        autoload -Uz +X bashcompinit && bashcompinit
-        complete -C '/usr/local/bin/aws_completer' aws
-    fi
-fi
-
-# -----------------------------------------------------------------------------
-# Custom environment variables
-# -----------------------------------------------------------------------------
-
-export GPG_TTY=$(tty)
-
-export GOPATH="$HOME/.local/share/go"
-
-export XDG_DATA_HOME=$HOME/.local/share
-export XDG_CONFIG_HOME=$HOME/.config
-export XDG_STATE_HOME=$HOME/.local/state
-export XDG_CACHE_HOME=$HOME/.cache
-
-export EDITOR="code --wait"
-
-mkdir -p -v ~/App_cache/
-# https://pytorch.org/docs/stable/hub.html#where-are-my-downloaded-models-saved
-export TORCH_HOME=~/App_cache/torch_home/
-
-# https://huggingface.co/docs/huggingface_hub/package_reference/environment_variables#hfhome
-export HF_HOME=~/App_cache/huggingface_home/
-
-export LC_ALL="en_US.utf8"
-
-export TERM=xterm-256color
-
-export MANPAGER="sh -c 'sed -u -e \"s/\\x1B\[[0-9;]*m//g; s/.\\x08//g\" | bat -p -lman'"
-
-# CUDA environment variables
-# Ensure that the CUDA toolkit is installed and the paths are correct.
-# Adjust the paths below if your CUDA installation is in a different location.
-export CUDA_HOME=/usr/local/cuda
-export PATH=$CUDA_HOME/bin:$PATH
-export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
-
-
-
-# Function: pretty_env_vars
-# Prints a simple table of the custom environment variables set by this script
 pretty_env_vars() {
+    my_shell_rc_is_interactive || return 0
+    [ "${MY_SHELL_RC_VERBOSE}" = "1" ] || return 0
+
     local -a vars
     vars=(
         "GPG_TTY|GPG TTY device used by GPG"
@@ -248,34 +122,289 @@ pretty_env_vars() {
         "CUDA_HOME|CUDA toolkit root"
         "PATH|Current PATH"
         "LD_LIBRARY_PATH|Dynamic linker library path"
+        "BUN_INSTALL|Bun installation directory"
+        "NVM_DIR|NVM directory"
     )
 
     printf "🔎 %-20s %-60s %s\n" "VARIABLE" "VALUE" "DESCRIPTION"
     printf "🔎 %-20s %-60s %s\n" "--------" "-----" "-----------"
 
+    local entry name desc val display_val
     for entry in "${vars[@]}"; do
         name="${entry%%|*}"
         desc="${entry#*|}"
-        # Indirect expansion to get variable value
-        val="${!name}"
-        if [ -z "$val" ]; then
+        # Portable indirect expansion
+        eval "val=\${${name}-}"
+        if [ -z "${val-}" ]; then
             val="(not set)"
         fi
-        # Shorten long values for readability
-        if [ ${#val} -gt 58 ]; then
-            display_val="${val:0:55}..."
-        else
-            display_val="$val"
+        display_val=$(printf "%.55s" "$val")
+        if [ "${#val}" -gt 55 ]; then
+            display_val="${display_val}..."
         fi
         printf "   %-20s %-60s %s\n" "$name" "$display_val" "$desc"
     done
     echo "🔚 End of environment variables table"
 }
 
-# Show the custom env vars at shell init (can be commented out if too verbose)
+my_shell_rc_env_init() {
+    # -------------------------------------------------------------------------
+    # Custom environment variables
+    # -------------------------------------------------------------------------
+
+    export GOPATH="$HOME/.local/share/go"
+
+    export XDG_DATA_HOME="$HOME/.local/share"
+    export XDG_CONFIG_HOME="$HOME/.config"
+    export XDG_STATE_HOME="$HOME/.local/state"
+    export XDG_CACHE_HOME="$HOME/.cache"
+
+    export EDITOR="code --wait"
+
+    # Only set GPG_TTY when a TTY is available
+    if command -v tty >/dev/null 2>&1; then
+        GPG_TTY="$(tty 2>/dev/null)"
+        export GPG_TTY
+    fi
+
+    mkdir -p "$HOME/App_cache" 2>/dev/null
+    export TORCH_HOME="$HOME/App_cache/torch_home"
+    export HF_HOME="$HOME/App_cache/huggingface_home"
+
+    export LC_ALL="en_US.utf8"
+    export TERM=xterm-256color
+
+    export MANPAGER="sh -c 'sed -u -e \"s/\\x1B\\[[0-9;]*m//g; s/.\\x08//g\" | bat -p -lman'"
+
+    # CUDA environment variables
+    export CUDA_HOME=/usr/local/cuda
+
+    # -------------------------------------------------------------------------
+    # PATH setup
+    # -------------------------------------------------------------------------
+
+    prepend_to_path "$HOME/.local/bin"
+    prepend_to_path "$HOME/.local/share/go/bin"
+    prepend_to_path "$CUDA_HOME/bin"
+    prepend_to_path "$HOME/.koyeb/bin"
+
+    # bun
+    export BUN_INSTALL="$HOME/.bun"
+    prepend_to_path "$BUN_INSTALL/bin"
+
+    # LD_LIBRARY_PATH (avoid adding duplicates)
+    if [ -d "$CUDA_HOME/lib64" ]; then
+        case ":${LD_LIBRARY_PATH-}:" in
+            *":$CUDA_HOME/lib64:"*) ;;
+            *)
+                LD_LIBRARY_PATH="$CUDA_HOME/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+                export LD_LIBRARY_PATH
+                ;;
+        esac
+    fi
+
+    pretty_path
+
+    # -------------------------------------------------------------------------
+    # Tool environment hooks (shared)
+    # -------------------------------------------------------------------------
+
+    # Rust
+    if [ -f "$HOME/.cargo/env" ]; then
+        # shellcheck disable=SC1090
+        . "$HOME/.cargo/env"
+    fi
+
+    # Deno
+    if [ -f "$HOME/.deno/env" ]; then
+        # shellcheck disable=SC1090
+        . "$HOME/.deno/env"
+    elif [ -f "/home/lolo/.deno/env" ]; then
+        # shellcheck disable=SC1091
+        . "/home/lolo/.deno/env"
+    fi
+
+    # NVM
+    export NVM_DIR="$HOME/.config/nvm"
+    if [ -s "$NVM_DIR/nvm.sh" ]; then
+        # shellcheck disable=SC1090
+        . "$NVM_DIR/nvm.sh"
+    fi
+    if [ "$TYPE_OF_SHELL" = "bash" ] && [ -s "$NVM_DIR/bash_completion" ]; then
+        # shellcheck disable=SC1090
+        . "$NVM_DIR/bash_completion"
+    fi
+
+    # Kiro shell integration
+    if [ "${TERM_PROGRAM-}" = "kiro" ] && command -v kiro >/dev/null 2>&1; then
+        if [ "$TYPE_OF_SHELL" = "bash" ]; then
+            # shellcheck disable=SC1090
+            . "$(kiro --locate-shell-integration-path bash)"
+        elif [ "$TYPE_OF_SHELL" = "zsh" ]; then
+            # shellcheck disable=SC1090
+            . "$(kiro --locate-shell-integration-path zsh)"
+        fi
+    fi
+
+    # bun completions are zsh-specific
+    if [ "$TYPE_OF_SHELL" = "zsh" ] && [ -s "/home/lolo/.bun/_bun" ]; then
+        # shellcheck disable=SC1091
+        source "/home/lolo/.bun/_bun"
+    fi
+}
+
+my_shell_rc_source_if_exists() {
+    local file
+    file="$1"
+    if [ -f "$file" ]; then
+        # shellcheck disable=SC1090
+        source "$file"
+    else
+        my_shell_rc_log "File $file not found."
+    fi
+}
+
+my_shell_rc_env_init
+
+# Source aliases for both shells
+my_shell_rc_source_if_exists "$HOME/.my_aliases.sh"
+
 pretty_env_vars
 
-# -----------------------------------------------------------------------------
+my_shell_rc_deferred_init() {
+    # -------------------------------------------------------------------------
+    # Custom command activations + completions
+    #
+    # For zsh, call this after compinit.
+    # For bash, this can run immediately (bash-completion is loaded in .bashrc).
+    # -------------------------------------------------------------------------
+
+    # starship
+    if command -v starship >/dev/null 2>&1; then
+        eval "$(starship init "${TYPE_OF_SHELL}")"
+        eval "$(starship completions "${TYPE_OF_SHELL}")"
+    else
+        echo "starship is not installed. ❌"
+    fi
+
+    # Atuin
+    if [ -d "$HOME/.atuin/bin/" ]; then
+        # shellcheck disable=SC1090
+        . "$HOME/.atuin/bin/env"
+
+        if [ "$TYPE_OF_SHELL" = "bash" ] && [ -f "$HOME/.bash-preexec.sh" ]; then
+            # shellcheck disable=SC1090
+            source "$HOME/.bash-preexec.sh"
+        fi
+
+        eval "$(atuin init --disable-up-arrow "${TYPE_OF_SHELL}")"
+        eval "$(atuin gen-completions --shell "${TYPE_OF_SHELL}")"
+    else
+        echo "Directory $HOME/.atuin/bin/ does not exist. Please install Atuin. ❌"
+    fi
+
+    # broot launcher (works in both bash and zsh)
+    if [ -f "$HOME/.config/broot/launcher/bash/br" ]; then
+        # shellcheck disable=SC1090
+        source "$HOME/.config/broot/launcher/bash/br"
+    else
+        echo "Broot launcher script not found at $HOME/.config/broot/launcher/bash/br. ⚠️"
+    fi
+
+    # fx
+    if command -v fx >/dev/null 2>&1; then
+        # shellcheck disable=SC1090
+        source <(fx --comp "${TYPE_OF_SHELL}")
+        export FX_THEME="5"
+    else
+        echo "fx is not installed. ❌"
+    fi
+
+    # uv
+    if command -v uv >/dev/null 2>&1; then
+        eval "$(uv generate-shell-completion "${TYPE_OF_SHELL}")"
+        if command -v uvx >/dev/null 2>&1; then
+            eval "$(uvx --generate-shell-completion "${TYPE_OF_SHELL}")"
+        fi
+    else
+        echo "uv is not installed. ❌"
+    fi
+
+    # zoxide
+    if command -v zoxide >/dev/null 2>&1; then
+        eval "$(zoxide init "${TYPE_OF_SHELL}")"
+    else
+        echo "zoxide is not installed. ❌"
+    fi
+
+    # chezmoi
+    if command -v chezmoi >/dev/null 2>&1; then
+        eval "$(chezmoi completion "${TYPE_OF_SHELL}")"
+    else
+        echo "chezmoi is not installed. ❌"
+    fi
+
+    # gh
+    if command -v gh >/dev/null 2>&1; then
+        eval "$(gh completion -s "${TYPE_OF_SHELL}")"
+
+        if gh copilot --help &>/dev/null; then
+            gh_copilot_aliases=""
+            if gh_copilot_aliases="$(gh copilot alias -- "${TYPE_OF_SHELL}" 2>/dev/null)" && [ -n "${gh_copilot_aliases}" ]; then
+                eval "${gh_copilot_aliases}"
+            else
+                my_shell_rc_log "Skipping gh copilot aliases (command failed or empty output)."
+            fi
+            unset gh_copilot_aliases
+        else
+            my_shell_rc_log "The 'gh copilot' subcommand does not exist. ⚠️"
+        fi
+    else
+        echo "gh is not installed. ❌"
+    fi
+
+    # rclone
+    if command -v rclone >/dev/null 2>&1; then
+        eval "$(rclone completion "${TYPE_OF_SHELL}" -)"
+    else
+        echo "rclone is not installed. ❌"
+    fi
+
+    # task
+    if command -v task >/dev/null 2>&1; then
+        eval "$(task --completion "${TYPE_OF_SHELL}")"
+    else
+        echo "Taskfile is not installed. ❌"
+    fi
+
+    # doctl
+    if command -v doctl >/dev/null 2>&1; then
+        # shellcheck disable=SC1090
+        source <(doctl completion "${TYPE_OF_SHELL}")
+    else
+        echo "doctl is not installed. ❌"
+    fi
+
+    # aws
+    if command -v aws >/dev/null 2>&1; then
+        if [ "$TYPE_OF_SHELL" = "bash" ]; then
+            if command -v complete >/dev/null 2>&1; then
+                complete -C '/usr/local/bin/aws_completer' aws
+            fi
+        elif [ "$TYPE_OF_SHELL" = "zsh" ]; then
+            autoload -Uz +X bashcompinit && bashcompinit
+            if command -v complete >/dev/null 2>&1; then
+                complete -C '/usr/local/bin/aws_completer' aws
+            fi
+        fi
+    else
+        echo "awscli is not installed."
+    fi
+}
+
+if [ "$TYPE_OF_SHELL" = "bash" ]; then
+    my_shell_rc_deferred_init
+fi
 
 
 # FIXME: /home/lolo/.local/share/oracle-cli/lib/python3.10/site-packages/oci_cli/bin/oci_autocomplete.sh:12: command not found: complete

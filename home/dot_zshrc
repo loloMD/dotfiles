@@ -4,6 +4,12 @@ HISTSIZE=10000
 setopt extendedglob notify
 bindkey -e
 # End of lines configured by zsh-newuser-install
+
+# Optional startup profiling (prints a report at the end of startup)
+# Usage: `ZSH_STARTUP_PROFILE=1 zsh -i -c exit`
+if [[ -n ${ZSH_STARTUP_PROFILE-} ]]; then
+    zmodload zsh/zprof 2>/dev/null
+fi
 # The following lines were added by compinstall
 zstyle :compinstall filename '/home/lolo/.zshrc'
 
@@ -15,8 +21,13 @@ fpath=("$HOME/.zsh_completions" "$HOME/.docker/completions" $fpath)
 # Add deno completions to search path
 if [[ ":$FPATH:" != *":/home/lolo/.zsh/completions:"* ]]; then export FPATH="/home/lolo/.zsh/completions:$FPATH"; fi
 
-. "/home/lolo/.deno/env"
-fpath+=~/.zfunc; autoload -Uz compinit; compinit
+fpath+=~/.zfunc
+
+if [ -f "$HOME/.my_shell_rc.sh" ]; then
+    source "$HOME/.my_shell_rc.sh"
+else
+    echo "File $HOME/.my_shell_rc.sh not found."
+fi
 
 autoload -Uz compinit
 compinit
@@ -91,23 +102,9 @@ zle -N down-line-or-beginning-search
 
 # ----------------------------- Source PERSONAL CUSTOMIZATION FILES
 
-# definition that takes as input path to a file and sources it if present otherwise print error message
-source_if_exists() {
-    if [ -f "$1" ]; then
-        # shellcheck source=./$1
-        source "$1"
-    else
-        echo "File $1 not found."
-    fi
-}
-
-source_if_exists "$HOME/.my_shell_rc.sh"
-source_if_exists "$HOME/.my_aliases.sh"
-
-## Created by nwm
-export NVM_DIR="$HOME/.config/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+if (( $+functions[my_shell_rc_deferred_init] )); then
+    my_shell_rc_deferred_init
+fi
 
 # Load completions after all setup is done
 if command -v ollama &>/dev/null; then
@@ -133,9 +130,33 @@ compdef _ollama ollama 2>/dev/null
 compdef _bat bat 2>/dev/null
 
 if command -v bw &>/dev/null; then
+    _zsh_has_internet_for_bw() {
+        # Fast connectivity probe with tight timeouts to avoid hanging shell startup.
+        # Uses Bitwarden's config endpoint because `bw` itself may hit it.
+        if command -v curl >/dev/null 2>&1; then
+            curl -fsS --connect-timeout 1 --max-time 2 https://api.bitwarden.com/config >/dev/null 2>&1
+            return $?
+        fi
+        if command -v wget >/dev/null 2>&1; then
+            wget -q --spider --timeout=2 --tries=1 https://api.bitwarden.com/config >/dev/null 2>&1
+            return $?
+        fi
+        if command -v getent >/dev/null 2>&1; then
+            getent hosts api.bitwarden.com >/dev/null 2>&1
+            return $?
+        fi
+        return 1
+    }
+
     ## Bitwarden CLI has completion only for zsh shell
     # https://bitwarden.com/help/cli/#zsh-shell-completion
-    eval "$(bw completion --shell zsh); compdef _bw bw;"
+    if _zsh_has_internet_for_bw; then
+        eval "$(bw completion --shell zsh); compdef _bw bw;"
+    else
+        if (( $+functions[my_shell_rc_log] )); then
+            my_shell_rc_log "Skipping bw completion (no internet / timed out)."
+        fi
+    fi
 fi
 
 
@@ -145,11 +166,8 @@ fi
 # heroku autocomplete setup
 HEROKU_AC_ZSH_SETUP_PATH=/home/lolo/.cache/heroku/autocomplete/zsh_setup && test -f $HEROKU_AC_ZSH_SETUP_PATH && source $HEROKU_AC_ZSH_SETUP_PATH;
 
-[[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
+if [[ -n ${ZSH_STARTUP_PROFILE-} ]]; then
+    zprof
+fi
 
-# bun completions
-[ -s "/home/lolo/.bun/_bun" ] && source "/home/lolo/.bun/_bun"
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+fpath+=~/.zfunc; autoload -Uz compinit; compinit

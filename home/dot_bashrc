@@ -86,21 +86,9 @@ fi
 
 # ----------------------------- Source PERSONAL CUSTOMIZATION FILES
 
-# definition that takes as input path to a file and sources it if present otherwise print error message
-source_if_exists() {
-    if [ -f "$1" ]; then
-        # shellcheck source=./$1
-        source "$1"
-    else
-        echo "File $1 not found."
-    fi
-}
-
-source_if_exists "$HOME/.my_shell_rc.sh"
-source_if_exists "$HOME/.my_aliases.sh"
-
-
-. "$HOME/.cargo/env"
-. "/home/lolo/.deno/env"
-
-[[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path bash)"
+if [ -f "$HOME/.my_shell_rc.sh" ]; then
+    # shellcheck disable=SC1090
+    source "$HOME/.my_shell_rc.sh"
+else
+    echo "File $HOME/.my_shell_rc.sh not found."
+fi

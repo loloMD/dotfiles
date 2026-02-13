@@ -1,0 +1,22 @@
+# this file is for non-rooted working android device
+# use it through command below
+# alias adbsh='adb shell -t "ENV=/data/local/tmp/.mkshrc sh -i"'
+
+# Custom Prompt (User@Device:Path $)
+# \033[...m are ANSI color codes
+export PS1='$(echo -e "\033[1;32m$(whoami)\033[0m@\033[1;34m$(getprop ro.product.model)\033[0m:\033[1;33m$PWD\033[0m $ ")'
+
+# Useful Aliases
+alias ll='ls -alF --color'
+alias la='ls -A'
+alias l='ls -CF'
+alias ..='cd ..'
+alias grep='grep --color=auto'
+
+# Environment Variables
+export TERM=xterm-256color
+export TMP=/data/local/tmp
+export SCAND=/sdcard/SCANDERIA_ASSETS
+
+# Clear screen shortcuts
+bind '^L'=clear-screen

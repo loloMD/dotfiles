@@ -24,7 +24,7 @@
 # you can launch broot with `br -H`).
 # A popular flag is the `g` one which displays git related info.
 
-default_flags: "--dates --show-root-fs --no-only-folders --show-git-info --hidden --git-ignored --permissions --sizes --sort-by-type-dirs-first --sort-by-size --whale-spotting --no-trim-root"
+default_flags: "--show-root-fs --no-only-folders --show-git-info --hidden --git-ignored --permissions --sizes --sort-by-type-dirs-first --sort-by-size --whale-spotting --no-trim-root"
 
 
 ###############################################################
@@ -234,7 +234,7 @@ preview_transformers: [
         input_extensions: [ "pdf" ] // case doesn't matter
         output_extension: png
         mode: image
-        command: [ "mutool", "draw", "-F", "png", "-w", "1000", "-o", "{output-path}", "{input-path}", "1" ]
+        command: [ "broot-pdf-preview", "{input-path}", "{output-path}" ]
     }
 
     # Use LibreOffice to render Office files as images

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+in="$1"
+out="$2"
+
+# Try to get page count, but never fail if pdfinfo is missing/broken
+pages=""
+if command -v pdfinfo >/dev/null 2>&1; then
+  pages=$(pdfinfo "$in" 2>/dev/null | awk '/^Pages:/ {print $2}' || true)
+fi
+
+# Always render the first page as PNG for broot
+mutool draw -F png -w 1000 -o "$out" "$in" 1
+
+# Optionally overlay page count on the image, without changing format
+if command -v convert >/dev/null 2>&1 && [ -n "${pages:-}" ]; then
+  convert "$out" \
+    -gravity SouthEast -fill white -undercolor '#00000080' -pointsize 18 \
+    -annotate +10+10 "${pages} pages" \
+    "$out" 2>/dev/null || true
+fi
